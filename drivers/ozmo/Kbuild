@@ -3,7 +3,7 @@
 # Released under the GNU General Public License Version 2 (GPLv2).
 # -----------------------------------------------------------------------------
 
-obj-m += ozwpan.o
+obj-y += ozwpan.o
 
 ozwpan-y += ozmain.o
 ozwpan-y += ozpd.o
