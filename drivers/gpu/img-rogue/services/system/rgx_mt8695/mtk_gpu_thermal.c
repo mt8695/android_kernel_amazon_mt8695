@@ -93,7 +93,7 @@ static void pvr_set_scale_max(unsigned int idx)
 {
 	if (!g_pvr_gpufreq.power_table) {
 		pr_err("%s: gpu power table not ready\n", __func__);
-		return -EINVAL;
+		return;
 	}
 
 	if (idx > g_pvr_gpufreq.max_state || idx < 0) {
