@@ -1,6 +1,14 @@
 menu "Distributed Switch Architecture drivers"
 	depends on HAVE_NET_DSA
 
+config NET_DSA_MT7530
+	tristate "Mediatek MT7530 Ethernet switch support"
+	depends on NET_DSA
+	select NET_DSA_TAG_MTK
+	---help---
+	  This enables support for the Mediatek MT7530 Ethernet switch
+	  chip.
+
 config NET_DSA_MV88E6XXX
 	tristate
 	default n

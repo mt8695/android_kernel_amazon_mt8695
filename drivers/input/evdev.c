@@ -223,6 +223,8 @@ static int evdev_set_clk_type(struct evdev_client *client, unsigned int clkid)
 		}
 
 		spin_unlock_irqrestore(&client->buffer_lock, flags);
+	} else {
+		pr_info("clock is already set correctly \n");
 	}
 
 	return 0;
@@ -501,12 +503,20 @@ static int evdev_open(struct inode *inode, struct file *file)
 					bufsize * sizeof(struct input_event);
 	struct evdev_client *client;
 	int error;
+	struct input_dev *dev = evdev->handle.dev;
 
 	client = kzalloc(size, GFP_KERNEL | __GFP_NOWARN);
 	if (!client)
 		client = vzalloc(size);
 	if (!client)
 		return -ENOMEM;
+	if (dev->name) {
+		if (strcmp(dev->name, "Amazon Fire TV Remote") == 0
+			|| strcmp(dev->name, "AR") == 0) {
+			pr_info("firetv remote, set the clock to EV_CLK_MONO directly\n");
+			client->clk_type = EV_CLK_MONO;
+		}
+	}
 
 	client->bufsize = bufsize;
 	spin_lock_init(&client->buffer_lock);

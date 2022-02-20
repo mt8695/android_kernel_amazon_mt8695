@@ -31,8 +31,13 @@
 #include <linux/compiler.h>
 #include <linux/moduleparam.h>
 #include <linux/wakeup_reason.h>
+#include <linux/reboot.h>
 
 #include "power.h"
+
+#ifdef CONFIG_AMAZON_SIGN_OF_LIFE
+#include <linux/sign_of_life.h>
+#endif
 
 const char *pm_labels[] = { "mem", "standby", "freeze", NULL };
 const char *pm_states[PM_SUSPEND_MAX];
@@ -314,6 +319,7 @@ void __weak arch_suspend_enable_irqs(void)
  *
  * This function should be called after devices have been suspended.
  */
+static bool suspended_success = 0;
 static int suspend_enter(suspend_state_t state, bool *wakeup)
 {
 	char suspend_abort[MAX_SUSPEND_ABORT_LEN];
@@ -384,6 +390,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 			trace_suspend_resume(TPS("machine_suspend"),
 				state, false);
 			events_check_enabled = false;
+			suspended_success = 1;
 		} else if (*wakeup) {
 			pm_get_active_wakeup_sources(suspend_abort,
 				MAX_SUSPEND_ABORT_LEN);
@@ -398,6 +405,14 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 
  Enable_cpus:
 	enable_nonboot_cpus();
+	if (suspended_success) {
+#ifdef CONFIG_AMAZON_SIGN_OF_LIFE
+		life_cycle_set_boot_reason(WARMBOOT_BY_SW);
+#endif
+		printk(KERN_ERR "PM: enable nonboot cpus finish and reboot\n");
+		suspended_success = 0;
+		emergency_restart();
+	}
 
  Platform_wake:
 	platform_resume_noirq(state);

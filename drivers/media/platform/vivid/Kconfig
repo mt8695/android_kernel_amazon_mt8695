@@ -21,6 +21,13 @@ config VIDEO_VIVID
 	  Say Y here if you want to test video apps or debug V4L devices.
 	  When in doubt, say N.
 
+config VIDEO_VIVID_CEC
+	bool "Enable CEC emulation support"
+	depends on VIDEO_VIVID && MEDIA_CEC_SUPPORT
+	---help---
+	  When selected the vivid module will emulate the optional
+	  HDMI CEC feature.
+
 config VIDEO_VIVID_MAX_DEVS
 	int "Maximum number of devices"
 	depends on VIDEO_VIVID

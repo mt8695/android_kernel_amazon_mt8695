@@ -2,6 +2,9 @@
 # Makefile for sensor chip drivers.
 #
 
+ccflags-y  += -I$(srctree)/drivers/misc/mediatek/base/power/hps_v1/
+
+
 obj-$(CONFIG_THERMAL)		+= thermal_sys.o
 thermal_sys-y			+= thermal_core.o
 
@@ -10,14 +13,25 @@ thermal_sys-$(CONFIG_THERMAL_HWMON)		+= thermal_hwmon.o
 thermal_sys-$(CONFIG_THERMAL_OF)		+= of-thermal.o
 
 # governors
+thermal_sys-$(CONFIG_THERMAL_BACKWARD_COMPATIBLE)	+= backward_compatible.o
+thermal_sys-$(CONFIG_THERMAL_GOV_LEGACY)	+= legacy.o
 thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= fair_share.o
 thermal_sys-$(CONFIG_THERMAL_GOV_BANG_BANG)	+= gov_bang_bang.o
 thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)	+= step_wise.o
+thermal_sys-$(CONFIG_THERMAL_GOV_TRIP_STEP_WISE)	+= trip_step_wise.o
 thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)	+= user_space.o
 thermal_sys-$(CONFIG_THERMAL_GOV_POWER_ALLOCATOR)	+= power_allocator.o
 
 # cpufreq cooling
 thermal_sys-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
+# cpucore cooling
+thermal_sys-$(CONFIG_CPUCORE_THERMAL) += cpucore_cooling.o
+
+#gpufreq cooling
+thermal_sys-$(CONFIG_GPU_THERMAL) += gpu_cooling.o
+
+#wifi cooling
+thermal_sys-$(CONFIG_WIFI_THERMAL) += wifi_cooling.o
 
 # clock cooling
 thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
@@ -48,3 +62,6 @@ obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
 obj-$(CONFIG_ST_THERMAL)	+= st/
 obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
 obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+obj-$(CONFIG_THERMAL_VIRTUAL_SENSOR)	+= virtual_sensor_thermal.o
+

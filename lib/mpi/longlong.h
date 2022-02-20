@@ -172,7 +172,7 @@ extern UDItype __udiv_qrnnd(UDItype *, UDItype, UDItype, UDItype);
 /***************************************
 	**************  ARM  ******************
 	***************************************/
-#if defined(__arm__) && W_TYPE_SIZE == 32
+#if defined(__arm__) && W_TYPE_SIZE == 32 && defined(CONFIG_CC_IS_GCC)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
 	__asm__ ("adds %1, %4, %5\n" \
 		"adc  %0, %2, %3" \

@@ -1254,6 +1254,24 @@ static void hid_input_field(struct hid_device *hid, struct hid_field *field,
 		    value[n] - min < field->maxusage &&
 		    field->usage[value[n] - min].hid == HID_UP_KEYBOARD + 1)
 			goto exit;
+
+		if (field->usage->hid == HID_DC_BATTERYSTRENGTH &&
+			hid->ll_driver->battery_level_ind &&
+			value[n] != hid->received_battery_level) {
+			hid_info(hid, "old battery level is %d; new value[%d]=%d\n",
+			hid->received_battery_level, n, value[n]);
+
+			hid->received_battery_level = value[n];
+
+			/* Convert New Battery Level into Percentage */
+			hid->battery_level = ((hid->received_battery_level -
+						field->logical_minimum) * 100) /
+						(field->logical_maximum -
+						field->logical_minimum);
+			hid->ll_driver->battery_level_ind(hid,
+						hid->battery_level);
+			hid_info(hid, "new normalized battery level is %d\n", hid->battery_level);
+		}
 	}
 
 	for (n = 0; n < count; n++) {
@@ -1304,6 +1322,17 @@ static void hid_output_field(const struct hid_device *hid,
 }
 
 /*
+ * Compute the size of a report.
+ */
+static size_t hid_compute_report_size(struct hid_report *report)
+{
+	if (report->size)
+		return ((report->size - 1) >> 3) + 1;
+
+	return 0;
+}
+
+/*
  * Create a report. 'data' has to be allocated using
  * hid_alloc_report_buf() so that it has proper size.
  */
@@ -1315,7 +1344,7 @@ void hid_output_report(struct hid_report *report, __u8 *data)
 	if (report->id > 0)
 		*data++ = report->id;
 
-	memset(data, 0, ((report->size - 1) >> 3) + 1);
+	memset(data, 0, hid_compute_report_size(report));
 	for (n = 0; n < report->maxfield; n++)
 		hid_output_field(report->device, report->field[n], data);
 }
@@ -1442,9 +1471,11 @@ int hid_report_raw_event(struct hid_device *hid, int type, u8 *data, u32 size,
 		csize--;
 	}
 
-	rsize = ((report->size - 1) >> 3) + 1;
+	rsize = hid_compute_report_size(report);
 
-	if (rsize > HID_MAX_BUFFER_SIZE)
+	if (report_enum->numbered && rsize >= HID_MAX_BUFFER_SIZE)
+		rsize = HID_MAX_BUFFER_SIZE - 1;
+	else if (rsize > HID_MAX_BUFFER_SIZE)
 		rsize = HID_MAX_BUFFER_SIZE;
 
 	if (csize < rsize) {
@@ -1497,8 +1528,10 @@ int hid_input_report(struct hid_device *hid, int type, u8 *data, u32 size, int i
 	if (!hid)
 		return -ENODEV;
 
-	if (down_trylock(&hid->driver_input_lock))
+	if (down_trylock(&hid->driver_input_lock)) {
+		pr_err("hid input device busy\n");
 		return -EBUSY;
+	}
 
 	if (!hid->driver) {
 		ret = -ENODEV;
@@ -2065,6 +2098,12 @@ static const struct hid_device_id hid_have_special_driver[] = {
 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_NINTENDO, USB_DEVICE_ID_NINTENDO_WIIMOTE) },
 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_NINTENDO, USB_DEVICE_ID_NINTENDO_WIIMOTE2) },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_RAZER, USB_DEVICE_ID_RAZER_BLADE_14) },
+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_LAB126, USB_DEVICE_ID_LAB126_US_KB) },
+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_LAB126, USB_DEVICE_ID_LAB126_UK_KB) },
+	{ HID_BLUETOOTH_DEVICE(BT_VENDOR_ID_LAB126, USB_DEVICE_ID_LAB126_ASPEN_KB_US) },
+	{ HID_BLUETOOTH_DEVICE(BT_VENDOR_ID_LAB126, USB_DEVICE_ID_LAB126_ASPEN_KB_UK) },
+	{ HID_BLUETOOTH_DEVICE(BT_VENDOR_ID_LAB126, HID_ANY_ID) },
+	{ HID_USB_DEVICE(BT_VENDOR_ID_LAB126, HID_ANY_ID) },
 	{ }
 };
 

@@ -41,6 +41,23 @@ config USB_XHCI_PLATFORM
 
 	  If unsure, say N.
 
+config USB_XHCI_MTK
+	tristate "xHCI support for Mediatek MT65xx"
+	select MFD_SYSCON
+	depends on ARCH_MEDIATEK || SOC_MT7621 || COMPILE_TEST
+	---help---
+	  Say 'Y' to enable the support for the xHCI host controller
+	  found in Mediatek MT65xx SoCs.
+	  If unsure, say N.
+
+config USB_XHCI_MTK_DEBUGFS
+	tristate "xHCI DEBUGFS support for Mediatek MT65xx"
+	depends on USB_XHCI_MTK
+	---help---
+	  Say 'Y' to enable the debugfs support for the xHCI host controller
+	  found in Mediatek MT65xx SoCs.
+	  If don't need, say N.
+
 config USB_XHCI_MVEBU
 	tristate "xHCI support for Marvell Armada 375/38x"
 	select USB_XHCI_PLATFORM

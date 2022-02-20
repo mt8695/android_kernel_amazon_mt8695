@@ -314,7 +314,6 @@ config DEBUG_SECTION_MISMATCH
 
 config SECTION_MISMATCH_WARN_ONLY
 	bool "Make section mismatch errors non-fatal"
-	default y
 	help
 	  If you say N here, the build process will fail if there are any
 	  section mismatch, instead of just throwing warnings.
@@ -372,6 +371,14 @@ config MAGIC_SYSRQ
 	  send a BREAK and then within 5 seconds a command keypress. The
 	  keys are documented in <file:Documentation/sysrq.txt>. Don't say Y
 	  unless you really know what this hack does.
+
+config MAGIC_SYSRQ_WD_TEST
+	bool "Trigger WatchDog reset test via SysRq interface"
+	depends on MAGIC_SYSRQ
+	help
+	  If you say Y here, you can trigger WD reset as below
+	  $echo x > /proc/sysrq-trigger  (trigger softlockup and WD reset eventually)
+	  $echo y > /proc/sysrq-trigger  (triger a hard WD reset by disabling IRQ)
 
 config MAGIC_SYSRQ_DEFAULT_ENABLE
 	hex "Enable magic SysRq key functions by default"
@@ -1747,6 +1754,16 @@ config TEST_RHASHTABLE
 	  Enable this option to test the rhashtable functions at boot.
 
 	  If unsure, say N.
+
+config TEST_HASH
+	tristate "Perform selftest on hash functions"
+	default n
+	help
+	  Enable this option to test the kernel's siphash (<linux/siphash.h>)
+	  hash functions on boot (or module load).
+
+	  This is intended to help people writing architecture-specific
+	  optimized versions.  If unsure, say N.
 
 endmenu # runtime tests
 

@@ -211,9 +211,55 @@ config PHY_MT65XX_USB3
 	depends on ARCH_MEDIATEK && OF
 	select GENERIC_PHY
 	help
-	  Say 'Y' here to add support for Mediatek USB3.0 PHY driver
-	  for mt65xx SoCs. it supports two usb2.0 ports and
-	  one usb3.0 port.
+	  Say 'Y' here to add support for Mediatek USB3.0 PHY driver,
+	  it supports multiple usb2.0 and usb3.0 ports.
+
+config PHY_MTK_USB3_I2C_FPGA
+	tristate "Mediatek USB3.0 PHY Driver will use I2C interface"
+	depends on ARCH_MEDIATEK && OF
+	select GENERIC_PHY
+	help
+	  Enable this to support for Mediatek USB3.0 PHY I2c Interface driver,
+	  MTK MD1122, MS0796 and so on.
+
+	  It supports multiple usb2.0 and usb3.0 ports.
+	  This i2c interface is internal bus special for Medaitek USB 3.0
+	  PHY transceiver. In general, these daughter card is used
+	  to develop or verify usb feature in FPGA environment.
+
+config PHY_MTK_A60810
+	tristate "Mediatek USB3.0 PHY Driver with chip AT60810AG on MD1122 FPGA daughter board"
+	depends on ARCH_MEDIATEK && OF
+	select PHY_MTK_USB3_I2C_FPGA
+	help
+	  Enable this to add support the transceiver that is Mediatek USB3.0
+	  MD1122 PHY daughter board driver.
+
+	  This driver controls the entire PHY block usb2.0 PHYs.
+	  And we use xHCI IP MAC module that MTK customered.
+
+config PHY_MTK_A60931
+	tristate "Mediatek USB3.0 PHY Driver with chip A60931 on MS0796 FPGA daughter board"
+	depends on ARCH_MEDIATEK && OF
+	select PHY_MTK_USB3_I2C_FPGA
+	help
+	  Enable this to add support the transceiver that is Mediatek USB3.0
+	  MS0796 PHY daughter board driver.
+
+	  This driver controls the entire PHY block usb3.0/2.0 PHYs.
+	  And we use xHCI IP MAC module that MTK customered.
+
+config PHY_MTK_A60XXX
+	tristate "Mediatek USB3.0 PHY Driver with multichip A60931/AT60810AG FPGA daughter board"
+	depends on ARCH_MEDIATEK && OF
+	select PHY_MTK_USB3_I2C_FPGA
+	help
+	  Enable this to add support the transceiver that is Mediatek USB3.0
+	  MS0796 PHY daughter board driver.
+	  MD1122 PHY daughter board driver.
+
+	  This driver controls the entire PHY block usb3.0/2.0 PHYs.
+	  And we use xHCI IP MAC module that MTK customered.
 
 config PHY_SUN4I_USB
 	tristate "Allwinner sunxi SoC USB PHY driver"
@@ -390,5 +436,7 @@ config PHY_CYGNUS_PCIE
 	help
 	  Enable this to support the Broadcom Cygnus PCIe PHY.
 	  If unsure, say N.
+
+source "drivers/phy/mediatek/Kconfig"
 
 endmenu

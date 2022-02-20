@@ -1,0 +1,31 @@
+config NET_VENDOR_MEDIATEK
+	bool "MediaTek ethernet driver"
+#	depends on ARCH_MEDIATEK
+	default Y
+	---help---
+	  If you have a Mediatek SoC with ethernet, say Y.
+
+if NET_VENDOR_MEDIATEK
+
+config NET_MEDIATEK_SOC
+	tristate "MediaTek SoC Gigabit Ethernet support"
+	depends on NET_VENDOR_MEDIATEK
+	select PHYLIB
+	---help---
+	  This driver supports the gigabit ethernet MACs in the
+	  MediaTek SoC family.
+
+config NET_MEDIATEK_DBG
+	bool "Mediatek Ethernet debug interface"
+	depends on NET_MEDIATEK_SOC
+
+config MT8695_MAC
+	tristate "MediaTek MT8695 Gigabit Ethernet support"
+	select PHYLIB
+	select VLAN_8021Q
+	select MII
+	---help---
+	  This driver supports the gigabit ethernet MACs in the
+	  MediaTek MT8695 chipset family.
+
+endif #NET_VENDOR_MEDIATEK

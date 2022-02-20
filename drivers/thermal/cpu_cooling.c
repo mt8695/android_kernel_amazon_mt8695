@@ -166,9 +166,23 @@ static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_dev,
 		if (freq == cpufreq_dev->freq_table[level])
 			return level;
 
-		if (freq > cpufreq_dev->freq_table[level])
-			break;
+		if (freq < cpufreq_dev->freq_table[level] && freq > cpufreq_dev->freq_table[level+1])
+			return (level + 1);
+
+		/* check freq outside of available frequency later because ideally this should not happen */
+		if (freq > cpufreq_dev->freq_table[0]) {
+			pr_info("%s: frequency is larger than freq max, set to level 0\n", __func__);
+			return 0;
+		}
+
+		if (freq < cpufreq_dev->freq_table[cpufreq_dev->max_level]) {
+			pr_info("%s: frequency is less than freq min, set to level max:%d\n",
+					__func__, cpufreq_dev->max_level);
+			return cpufreq_dev->max_level;
+		}
 	}
+
+	pr_err("%s: cannot find frequency level for freq:%d\n", __func__, freq);
 
 	return THERMAL_CSTATE_INVALID;
 }
@@ -546,6 +560,17 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
 	return 0;
 }
 
+static int cpufreq_map_freq_to_state(struct thermal_cooling_device *cdev,
+			unsigned long freq, unsigned long *state)
+{
+	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+	unsigned int cpu = cpumask_any(&cpufreq_device->allowed_cpus);
+
+	*state = cpufreq_cooling_get_level(cpu, freq);
+
+	return 0;
+}
+
 /**
  * cpufreq_get_requested_power() - get the current power
  * @cdev:	&thermal_cooling_device pointer
@@ -746,6 +771,7 @@ static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
 	.get_max_state = cpufreq_get_max_state,
 	.get_cur_state = cpufreq_get_cur_state,
 	.set_cur_state = cpufreq_set_cur_state,
+	.map_action_to_state = cpufreq_map_freq_to_state
 };
 
 /* Notifier for cpufreq policy change */

@@ -42,6 +42,16 @@
 #include <linux/rcupdate.h>
 #include <linux/profile.h>
 #include <linux/notifier.h>
+/* fosmod_fireos_crash_reporting begin */
+#include <linux/slab.h>
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+#ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES
+#define REVERT_ADJ(x)  (x * (-OOM_DISABLE + 1) / OOM_SCORE_ADJ_MAX)
+#else
+#define REVERT_ADJ(x) (x)
+#endif /* CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES */
+/* fosmod_fireos_crash_reporting end */
 
 #define CREATE_TRACE_POINTS
 #include "trace/lowmemorykiller.h"
@@ -64,11 +74,63 @@ static int lowmem_minfree_size = 4;
 
 static unsigned long lowmem_deathpending_timeout;
 
+/* fosmod_fireos_crash_reporting begin */
+/* Declarations */
+size_t ion_mm_heap_total_memory(void);
+void ion_mm_heap_memory_detail_lmk(void);
+
+/* Constants */
+static int BUFFER_SIZE = 16*1024;
+static int ELEMENT_SIZE = 256;
+
+/* Variables */
+static char *lmk_log_buffer;
+static char *buffer_end;
+static char *head;
+static char *kill_msg_index;
+static char *previous_crash;
+static int buffer_remaining;
+static int foreground_kill;
+
+void lmk_add_to_buffer(const char *fmt, ...)
+{
+	if (lmk_log_buffer) {
+		if (head >= buffer_end) {
+			/* Don't add more logs buffer is full */
+			return;
+		}
+		if (buffer_remaining > 0) {
+			va_list args;
+			int added_size = 0;
+
+			va_start(args, fmt);
+			/* If the end of the buffer is reached and the added
+			 * value is truncated then vsnprintf will return the
+			 * original length of the value instead of the
+			 * truncated length - this is intended by design. */
+			added_size = vsnprintf(head, buffer_remaining, fmt, args);
+			va_end(args);
+			if (added_size > 0) {
+				/* Add 1 for null terminator */
+				added_size = added_size + 1;
+				buffer_remaining = buffer_remaining - added_size;
+				head = head + added_size;
+			}
+		}
+	}
+}
+
 #define lowmem_print(level, x...)			\
 	do {						\
 		if (lowmem_debug_level >= (level))	\
-			pr_info(x);			\
+			pr_warn(x);			\
+		if (foreground_kill)			\
+			lmk_add_to_buffer(x);		\
 	} while (0)
+/* In lowmem_print macro only added the lines 'if (foreground_kill)' and 'lmk_add_to_buffer(x)' */
+
+void show_free_areas_lmk(unsigned int filter);
+/* fosmod_fireos_crash_reporting end */
 
 static unsigned long lowmem_count(struct shrinker *s,
 				  struct shrink_control *sc)
@@ -145,6 +207,9 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 			continue;
 		}
 		tasksize = get_mm_rss(p->mm);
+#ifdef CONFIG_ZRAM
+		tasksize += get_mm_counter(p->mm, MM_SWAPENTS);
+#endif
 		task_unlock(p);
 		if (tasksize <= 0)
 			continue;
@@ -161,6 +226,51 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 		lowmem_print(2, "select '%s' (%d), adj %hd, size %d, to kill\n",
 			     p->comm, p->pid, oom_score_adj, tasksize);
 	}
+
+/* fosmod_fireos_crash_reporting begin */
+#ifndef CONFIG_MT_ENG_BUILD
+	if (lmk_log_buffer && selected && selected_oom_score_adj == 0) {
+		foreground_kill = 1;
+		head = lmk_log_buffer;
+		buffer_remaining = BUFFER_SIZE;
+		if (kill_msg_index && previous_crash)
+			strncpy(previous_crash, kill_msg_index, ELEMENT_SIZE);
+		lowmem_print(1, "======low memory killer=====\n");
+		lowmem_print(1, "Free memory other_free: %d, other_file:%d pages\n", other_free, other_file);
+		if (gfp_zone(sc->gfp_mask) == ZONE_NORMAL)
+			lowmem_print(1, "ZONE_NORMAL\n");
+		else
+			lowmem_print(1, "ZONE_HIGHMEM\n");
+
+		rcu_read_lock();
+		for_each_process(tsk) {
+			struct task_struct *p2;
+			short oom_score_adj2;
+
+			if (tsk->flags & PF_KTHREAD)
+				continue;
+
+			p2 = find_lock_task_mm(tsk);
+			if (!p2)
+				continue;
+
+			oom_score_adj2 = p2->signal->oom_score_adj;
+#ifdef CONFIG_ZRAM
+			lowmem_print(1, "Candidate %d (%s), adj %d, score_adj %d, rss %lu, rswap %lu, to kill\n",
+				p2->pid, p2->comm, REVERT_ADJ(oom_score_adj2), oom_score_adj2, get_mm_rss(p2->mm),
+				get_mm_counter(p2->mm, MM_SWAPENTS));
+#else /* CONFIG_ZRAM */
+			lowmem_print(1, "Candidate %d (%s), adj %d, score_adj %d, rss %lu, to kill\n",
+				p2->pid, p2->comm, REVERT_ADJ(oom_score_adj2), oom_score_adj2, get_mm_rss(p2->mm));
+#endif /* CONFIG_ZRAM */
+			task_unlock(p2);
+		}
+		rcu_read_unlock();
+		kill_msg_index = head;
+	}
+#endif /* CONFIG_MT_ENG_BUILD */
+/* fosmod_fireos_crash_reporting end */
+
 	if (selected) {
 		long cache_size = other_file * (long)(PAGE_SIZE / 1024);
 		long cache_limit = minfree * (long)(PAGE_SIZE / 1024);
@@ -188,6 +298,18 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 			     cache_size, cache_limit,
 			     min_score_adj,
 			     free);
+
+/* fosmod_fireos_crash_reporting begin */
+		if (foreground_kill) {
+				show_free_areas_lmk(0);
+				show_free_areas(0);
+			#ifdef CONFIG_MTK_ION
+				/* Show ION status */
+				lowmem_print(1, "ion_mm_heap_total_memory[%ld]\n", (unsigned long)ion_mm_heap_total_memory());
+				ion_mm_heap_memory_detail_lmk();
+/* fosmod_fireos_crash_reporting end */
+			#endif
+			}
 		lowmem_deathpending_timeout = jiffies + HZ;
 		rem += selected_tasksize;
 	}
@@ -195,6 +317,7 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 	lowmem_print(4, "lowmem_scan %lu, %x, return %lu\n",
 		     sc->nr_to_scan, sc->gfp_mask, rem);
 	rcu_read_unlock();
+	foreground_kill = 0; /* fosmod_fireos_crash_reporting oneline */
 	return rem;
 }
 
@@ -204,9 +327,61 @@ static struct shrinker lowmem_shrinker = {
 	.seeks = DEFAULT_SEEKS * 16
 };
 
+/* fosmod_fireos_crash_reporting begin */
+static int lowmem_proc_show(struct seq_file *m, void *v)
+{
+	char *ptr;
+
+	if (!lmk_log_buffer) {
+		seq_printf(m, "lmk_logs are not functioning - something went wrong during init");
+		return 0;
+	}
+	ptr = lmk_log_buffer;
+	while (ptr < head) {
+		int cur_line_len = strlen(ptr);
+		seq_printf(m, ptr, "\n");
+		if (cur_line_len <= 0)
+			break;
+		/* add 1 to skip the null terminator for C Strings */
+		ptr = ptr + cur_line_len + 1;
+	}
+	if (previous_crash && previous_crash[0] != '\0') {
+		seq_printf(m, "previous crash:\n");
+		seq_printf(m, previous_crash, "\n");
+	}
+	return 0;
+}
+
+static int lowmem_proc_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, lowmem_proc_show, NULL);
+}
+
+static const struct file_operations lowmem_proc_fops = {
+	.open       = lowmem_proc_open,
+	.read       = seq_read
+};
+/* fosmod_fireos_crash_reporting end */
+
 static int __init lowmem_init(void)
 {
 	register_shrinker(&lowmem_shrinker);
+    /* fosmod_fireos_crash_reporting begin */
+	proc_create("lmk_logs", 0, NULL, &lowmem_proc_fops);
+	lmk_log_buffer = kzalloc(BUFFER_SIZE, GFP_KERNEL);
+	if (lmk_log_buffer) {
+		buffer_end = lmk_log_buffer + BUFFER_SIZE;
+		head = lmk_log_buffer;
+		buffer_remaining = BUFFER_SIZE;
+		foreground_kill = 0;
+		kill_msg_index = NULL;
+		previous_crash = kzalloc(ELEMENT_SIZE, GFP_KERNEL);
+		if (!previous_crash)
+			printk(KERN_ALERT "unable to allocate previous_crash for /proc/lmk_logs - previous_crash will not be logged");
+	} else {
+		printk(KERN_ALERT "unable to allocate buffer for /proc/lmk_logs - feature will be disabled");
+	}
+    /* fosmod_fireos_crash_reporting end */
 	return 0;
 }
 device_initcall(lowmem_init);

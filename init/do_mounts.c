@@ -549,13 +549,27 @@ void __init mount_root(void)
 void __init prepare_namespace(void)
 {
 	int is_floppy;
+#ifdef CONFIG_DM_ANDROID_VERITY
+	dev_t res = 0;
+	int wait = 100; /* 10s max wait*/
+#endif /* CONFIG_DM_ANDROID_VERITY */
 
 	if (root_delay) {
 		printk(KERN_INFO "Waiting %d sec before mounting root device...\n",
 		       root_delay);
 		ssleep(root_delay);
 	}
-
+#ifdef CONFIG_DM_ANDROID_VERITY
+	/* wait for emmc block device ready due to system as root is mandantory. */
+	while (!res && wait--) {
+		res = blk_lookup_devt("mmcblk0", 0);
+		msleep(100);
+	}
+	if (res)
+		pr_info("dm-verity: block device is ready\n");
+	else
+		pr_err("dm-verity: timeout on waiting block device\n");
+#endif /* CONFIG_DM_ANDROID_VERITY */
 	/*
 	 * wait for the known devices to complete their probing
 	 *
@@ -572,8 +586,12 @@ void __init prepare_namespace(void)
 		root_device_name = saved_root_name;
 		if (!strncmp(root_device_name, "mtd", 3) ||
 		    !strncmp(root_device_name, "ubi", 3)) {
+#if defined(CONFIG_DM_NFSB)
+			panic("MTD and UBI devices not supported when NFSB is required.");
+#else
 			mount_block_root(root_device_name, root_mountflags);
 			goto out;
+#endif
 		}
 		ROOT_DEV = name_to_dev_t(root_device_name);
 		if (strncmp(root_device_name, "/dev/", 5) == 0)
@@ -597,6 +615,11 @@ void __init prepare_namespace(void)
 
 	if (is_floppy && rd_doload && rd_load_disk(0))
 		ROOT_DEV = Root_RAM0;
+
+#if defined(CONFIG_DM_NFSB)
+	/* If this succeeds, the ROOT_DEV will have changed. */
+	ROOT_DEV = dm_mount_nfsb(ROOT_DEV);
+#endif
 
 	mount_root();
 out:

@@ -30,7 +30,6 @@
 
  */
 
-
 #include <linux/device.h>
 #include <linux/hw_random.h>
 #include <linux/module.h>
@@ -45,11 +44,9 @@
 #include <linux/err.h>
 #include <asm/uaccess.h>
 
-
 #define RNG_MODULE_NAME		"hw_random"
 #define PFX			RNG_MODULE_NAME ": "
 #define RNG_MISCDEV_MINOR	183 /* official */
-
 
 static struct hwrng *current_rng;
 static struct task_struct *hwrng_fill;
@@ -92,6 +89,7 @@ static void add_early_randomness(struct hwrng *rng)
 	mutex_unlock(&reading_mutex);
 	if (bytes_read > 0)
 		add_device_randomness(rng_buffer, bytes_read);
+	memset(rng_buffer, 0, size);
 }
 
 static inline void cleanup_rng(struct kref *kref)
@@ -287,6 +285,7 @@ static ssize_t rng_dev_read(struct file *filp, char __user *buf,
 		}
 	}
 out:
+	memset(rng_buffer, 0, rng_buffer_size());
 	return ret ? : err;
 
 out_unlock_reading:
@@ -295,7 +294,6 @@ out_put:
 	put_rng(rng);
 	goto out;
 }
-
 
 static const struct file_operations rng_chrdev_ops = {
 	.owner		= THIS_MODULE,
@@ -313,7 +311,6 @@ static struct miscdevice rng_miscdev = {
 	.fops		= &rng_chrdev_ops,
 	.groups		= rng_dev_groups,
 };
-
 
 static ssize_t hwrng_attr_current_store(struct device *dev,
 					struct device_attribute *attr,
@@ -425,6 +422,7 @@ static int hwrng_fillfn(void *unused)
 		/* Outside lock, sure, but y'know: randomness. */
 		add_hwgenerator_randomness((void *)rng_fillbuf, rc,
 					   rc * current_quality * 8 >> 10);
+		memset(rng_fillbuf, 0, rng_buffer_size());
 	}
 	hwrng_fill = NULL;
 	return 0;
@@ -444,8 +442,7 @@ int hwrng_register(struct hwrng *rng)
 	int err = -EINVAL;
 	struct hwrng *old_rng, *tmp;
 
-	if (rng->name == NULL ||
-	    (rng->data_read == NULL && rng->read == NULL))
+	if (!rng->name || (!rng->data_read && !rng->read))
 		goto out;
 
 	mutex_lock(&rng_mutex);

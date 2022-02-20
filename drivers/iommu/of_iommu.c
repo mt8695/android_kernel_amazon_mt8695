@@ -110,6 +110,7 @@ void of_iommu_set_ops(struct device_node *np, struct iommu_ops *ops)
 	if (WARN_ON(!iommu))
 		return;
 
+	of_node_get(np);
 	INIT_LIST_HEAD(&iommu->list);
 	iommu->np = np;
 	iommu->ops = ops;
@@ -173,7 +174,7 @@ err_put_node:
 	return NULL;
 }
 
-void __init of_iommu_init(void)
+static int __init of_iommu_init(void)
 {
 	struct device_node *np;
 	const struct of_device_id *match, *matches = &__iommu_of_table;
@@ -185,4 +186,7 @@ void __init of_iommu_init(void)
 			pr_err("Failed to initialise IOMMU %s\n",
 				of_node_full_name(np));
 	}
+
+	return 0;
 }
+postcore_initcall_sync(of_iommu_init);

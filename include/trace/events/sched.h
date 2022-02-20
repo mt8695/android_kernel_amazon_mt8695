@@ -612,6 +612,18 @@ TRACE_EVENT(sched_wake_idle_without_ipi,
 	TP_printk("cpu=%d", __entry->cpu)
 );
 
+TRACE_EVENT(sched_heavy_task,
+	TP_PROTO(const char *s),
+	TP_ARGS(s),
+	TP_STRUCT__entry(
+		__string(s, s)
+		),
+	TP_fast_assign(
+		__assign_str(s, s);
+		),
+	TP_printk("%s", __get_str(s))
+);
+
 TRACE_EVENT(sched_contrib_scale_f,
 
 	TP_PROTO(int cpu, unsigned long freq_scale_factor,

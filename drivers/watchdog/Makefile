@@ -149,6 +149,7 @@ octeon-wdt-y := octeon-wdt-main.o octeon-wdt-nmi.o
 obj-$(CONFIG_LANTIQ_WDT) += lantiq_wdt.o
 obj-$(CONFIG_RALINK_WDT) += rt2880_wdt.o
 obj-$(CONFIG_IMGPDC_WDT) += imgpdc_wdt.o
+obj-$(CONFIG_MT7621_WDT) += mt7621_wdt.o
 
 # PARISC Architecture
 
@@ -192,3 +193,8 @@ obj-$(CONFIG_WM8350_WATCHDOG) += wm8350_wdt.o
 obj-$(CONFIG_MAX63XX_WATCHDOG) += max63xx_wdt.o
 obj-$(CONFIG_SOFT_WATCHDOG) += softdog.o
 obj-$(CONFIG_MENF21BMC_WATCHDOG) += menf21bmc_wdt.o
+
+# mediatek
+ifeq ($(CONFIG_MEDIATEK_WATCHDOG), y)
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/
+endif

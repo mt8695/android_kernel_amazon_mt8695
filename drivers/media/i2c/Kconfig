@@ -208,6 +208,13 @@ config VIDEO_ADV7604
 	  To compile this driver as a module, choose M here: the
 	  module will be called adv7604.
 
+config VIDEO_ADV7604_CEC
+	bool "Enable Analog Devices ADV7604 CEC support"
+	depends on VIDEO_ADV7604 && MEDIA_CEC_SUPPORT
+	---help---
+	  When selected the adv7604 will support the optional
+	  HDMI CEC feature.
+
 config VIDEO_ADV7842
 	tristate "Analog Devices ADV7842 decoder"
 	depends on VIDEO_V4L2 && I2C && VIDEO_V4L2_SUBDEV_API
@@ -220,6 +227,13 @@ config VIDEO_ADV7842
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called adv7842.
+
+config VIDEO_ADV7842_CEC
+	bool "Enable Analog Devices ADV7842 CEC support"
+	depends on VIDEO_ADV7842 && MEDIA_CEC_SUPPORT
+	---help---
+	  When selected the adv7842 will support the optional
+	  HDMI CEC feature.
 
 config VIDEO_BT819
 	tristate "BT819A VideoStream decoder"
@@ -444,6 +458,13 @@ config VIDEO_ADV7511
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called adv7511.
+
+config VIDEO_ADV7511_CEC
+	bool "Enable Analog Devices ADV7511 CEC support"
+	depends on VIDEO_ADV7511 && MEDIA_CEC_SUPPORT
+	---help---
+	  When selected the adv7511 will support the optional
+	  HDMI CEC feature.
 
 config VIDEO_AD9389B
 	tristate "Analog Devices AD9389B encoder"

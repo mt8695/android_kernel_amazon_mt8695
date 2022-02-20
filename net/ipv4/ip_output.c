@@ -80,6 +80,8 @@
 #include <linux/netlink.h>
 #include <linux/tcp.h>
 
+#include <net/ra_nat.h>
+
 int sysctl_ip_default_ttl __read_mostly = IPDEFTTL;
 EXPORT_SYMBOL(sysctl_ip_default_ttl);
 
@@ -457,6 +459,10 @@ packet_routed:
 	/* TODO : should we use skb->sk here instead of sk ? */
 	skb->priority = sk->sk_priority;
 	skb->mark = sk->sk_mark;
+
+	/* hw_nat use*/
+	hwnat_set_l2tp_unhit(iph, skb);
+	hwnat_check_magic_tag(skb);
 
 	res = ip_local_out(net, sk, skb);
 	rcu_read_unlock();

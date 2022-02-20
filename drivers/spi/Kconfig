@@ -346,6 +346,15 @@ config SPI_MT65XX
 	  say Y or M here.If you are not sure, say N.
 	  SPI drivers for Mediatek MT65XX and MT81XX series ARM SoCs.
 
+config SPIS_MT27XX
+	tristate "MediaTek SPI slave device"
+	depends on ARCH_MEDIATEK || COMPILE_TEST
+	help
+	  This selects the MediaTek(R) SPI slave device driver.
+	  If you want to use MediaTek(R) SPI interface,
+	  say Y or M here.If you are not sure, say N.
+	  SPI drivers for Mediatek MT27XX series ARM SoCs.
+
 config SPI_OC_TINY
 	tristate "OpenCores tiny SPI"
 	depends on GPIOLIB || COMPILE_TEST
@@ -550,6 +559,16 @@ config SPI_SUN6I
 	depends on RESET_CONTROLLER
 	help
 	  This enables using the SPI controller on the Allwinner A31 SoCs.
+
+config SPI_MT7621
+	tristate "MediaTek MT7621 SPI Controller"
+	depends on RALINK
+	help
+	  This selects a driver for the MediaTek MT7621 SPI Controller.
+	  This driver also used by MT7628 and MT7688.
+	  The chip select is controlled by firmware. That means this
+	  driver cannot be used for spi slave drivers which perform
+	  transactions with data size longer than 37 bytes.
 
 config SPI_MXS
 	tristate "Freescale MXS SPI controller"

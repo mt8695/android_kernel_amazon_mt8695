@@ -8,8 +8,15 @@ config PINCTRL
 menu "Pin controllers"
 	depends on PINCTRL
 
+config GENERIC_PINCTRL_GROUPS
+	bool
+
 config PINMUX
 	bool "Support pin multiplexing controllers" if COMPILE_TEST
+
+config GENERIC_PINMUX_FUNCTIONS
+	bool
+	select PINMUX
 
 config PINCONF
 	bool "Support pin configuration controllers" if COMPILE_TEST
@@ -129,6 +136,16 @@ config PINCTRL_MESON
 	select GPIOLIB
 	select OF_GPIO
 	select REGMAP_MMIO
+
+config PINCTRL_MTKMIPS
+	bool
+	depends on RALINK
+	select PINMUX
+	help
+	  Pinctrl driver for MediaTek MIPS SoCs.
+	  Supports MT7621 and older chips.
+	  This driver controls the GPIO pin mux with servel peripherals.
+	  Note that incorrect configuration may lead to system hang.
 
 config PINCTRL_ROCKCHIP
 	bool

@@ -421,8 +421,6 @@ rename:
 
 	dev->iommu_group = group;
 
-	iommu_group_create_direct_mappings(group, dev);
-
 	mutex_lock(&group->mutex);
 	list_add_tail(&device->list, &group->devices);
 	if (group->domain)
@@ -430,6 +428,7 @@ rename:
 	mutex_unlock(&group->mutex);
 	if (ret)
 		goto err_put_group;
+	iommu_group_create_direct_mappings(group, dev);
 
 	/* Notify any listeners about change to group. */
 	blocking_notifier_call_chain(&group->notifier,
@@ -871,6 +870,7 @@ struct iommu_group *iommu_group_get_for_dev(struct device *dev)
 
 	return group;
 }
+EXPORT_SYMBOL_GPL(iommu_group_get_for_dev);
 
 struct iommu_domain *iommu_group_default_domain(struct iommu_group *group)
 {
@@ -1326,6 +1326,7 @@ int iommu_map(struct iommu_domain *domain, unsigned long iova,
 	unsigned long orig_iova = iova;
 	unsigned int min_pagesz;
 	size_t orig_size = size;
+	phys_addr_t orig_paddr = paddr;
 	int ret = 0;
 
 	if (unlikely(domain->ops->map == NULL ||
@@ -1370,7 +1371,7 @@ int iommu_map(struct iommu_domain *domain, unsigned long iova,
 	if (ret)
 		iommu_unmap(domain, orig_iova, orig_size - size);
 	else
-		trace_map(orig_iova, paddr, orig_size);
+		trace_map(orig_iova, orig_paddr, orig_size);
 
 	return ret;
 }
@@ -1442,7 +1443,15 @@ size_t default_iommu_map_sg(struct iommu_domain *domain, unsigned long iova,
 	min_pagesz = 1 << __ffs(domain->ops->pgsize_bitmap);
 
 	for_each_sg(sg, s, nents, i) {
-		phys_addr_t phys = page_to_phys(sg_page(s)) + s->offset;
+		phys_addr_t phys;
+
+		if (!IS_ERR(sg_page(s))) {
+			phys = page_to_phys(sg_page(s)) + s->offset;
+		} else {
+			/* this is for which sg do not have page struct */
+			phys = sg_dma_address(s);
+			s->length = sg_dma_len(s);
+		}
 
 		/*
 		 * We are mapping on IOMMU page boundaries, so offset within

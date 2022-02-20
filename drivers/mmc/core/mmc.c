@@ -20,6 +20,13 @@
 #include <linux/mmc/card.h>
 #include <linux/mmc/mmc.h>
 
+#ifdef CONFIG_AMAZON_METRICS_LOG
+#include <linux/metricslog.h>
+#include <linux/vmalloc.h>
+#define LMK_METRIC_TAG "kernel"
+#define METRICS_LIFETIME_DATA_LEN 128
+#endif
+
 #include "core.h"
 #include "host.h"
 #include "bus.h"
@@ -109,6 +116,28 @@ static int mmc_decode_cid(struct mmc_card *card)
 		pr_err("%s: card has unknown MMCA version %d\n",
 			mmc_hostname(card->host), card->csd.mmca_vsn);
 		return -EINVAL;
+	}
+
+	/*add to print emmc vendor*/
+	switch(card->cid.manfid){
+	case 0x11:
+		pr_info("[%s]: EMMC Vendor: TOSHIBA\n", __func__);
+		break;
+	case 0x13:
+		pr_info("[%s]: EMMC Vendor: MICRON\n", __func__);
+		break;
+	case 0x15:
+		pr_info("[%s]: EMMC Vendor: SAMSUNG\n", __func__);
+		break;
+	case 0x45:
+		pr_info("[%s]: EMMC Vendor: SANDISK\n", __func__);
+		break;
+	case 0x90:
+		pr_info("[%s]: EMMC Vendor: HYNIX\n", __func__);
+		break;
+	default:
+		pr_info("[%s]: Unknown EMMC Vendor, manfid is 0X%x\n", __func__, card->cid.manfid);
+		break;
 	}
 
 	return 0;
@@ -345,6 +374,10 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 	unsigned int part_size;
 	struct device_node *np;
 	bool broken_hpi = false;
+
+#ifdef CONFIG_AMAZON_METRICS_LOG
+	char *buf;
+#endif
 
 	/* Version is coded in the CSD_STRUCTURE byte in the EXT_CSD register */
 	card->ext_csd.raw_ext_csd_structure = ext_csd[EXT_CSD_STRUCTURE];
@@ -598,6 +631,21 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 			ext_csd[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A];
 		card->ext_csd.device_life_time_est_typ_b =
 			ext_csd[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B];
+
+		pr_info("[%s]: Device life time estimation type A:%x, life time estimation type B:%x\n", __func__,
+						card->ext_csd.device_life_time_est_typ_a, card->ext_csd.device_life_time_est_typ_b);
+#ifdef CONFIG_AMAZON_METRICS_LOG
+		buf = vmalloc(METRICS_LIFETIME_DATA_LEN * sizeof(char));
+		if(buf != NULL){
+			snprintf(buf, METRICS_LIFETIME_DATA_LEN,
+				"emmc:info:est_life_time_type_a_%x=1, est_life_time_type_b_%x=1;CT;1:NR",
+				card->ext_csd.device_life_time_est_typ_a, card->ext_csd.device_life_time_est_typ_b);
+			log_to_metrics(ANDROID_LOG_INFO, LMK_METRIC_TAG, buf);
+			vfree(buf);
+		} else {
+			pr_warn("allocate metrics buf error for emmc");
+		}
+#endif
 	}
 out:
 	return err;

@@ -70,6 +70,7 @@ enum uhid_report_type {
 	UHID_FEATURE_REPORT,
 	UHID_OUTPUT_REPORT,
 	UHID_INPUT_REPORT,
+	UHID_OUTPUT_BATTERY_REPORT,
 };
 
 struct uhid_input2_req {

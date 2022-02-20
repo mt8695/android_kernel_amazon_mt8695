@@ -698,7 +698,7 @@ EXPORT_SYMBOL(mmc_wait_for_req);
 int mmc_interrupt_hpi(struct mmc_card *card)
 {
 	int err;
-	u32 status;
+	u32 status = 0;
 	unsigned long prg_wait;
 
 	BUG_ON(!card);

@@ -17,6 +17,14 @@ config SH_LCD_MIPI_DSI
 
 source "drivers/char/agp/Kconfig"
 
+menu "Imagination GPU support"
+source "drivers/gpu/img-rogue/Kconfig"
+endmenu
+
+menu "ARM GPU Configuration"
+source "drivers/gpu/arm/Kconfig"
+endmenu
+
 source "drivers/gpu/vga/Kconfig"
 
 source "drivers/gpu/host1x/Kconfig"

@@ -10,6 +10,10 @@
 extern const char linux_banner[];
 extern const char linux_proc_banner[];
 
+#ifdef CONFIG_MTK_AEE_FEATURE
+extern void aee_wdt_zap_locks(void);
+#endif
+
 static inline int printk_get_level(const char *buffer)
 {
 	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {

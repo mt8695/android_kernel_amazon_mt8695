@@ -29,6 +29,15 @@ config LEDS_CLASS_FLASH
 	  for the flash related features of a LED device. It can be built
 	  as a module.
 
+config LEDS_BRIGHTNESS_HW_CHANGED
+	bool "LED Class brightness_hw_changed attribute support"
+	depends on LEDS_CLASS
+	help
+	  This option enables support for the brightness_hw_changed attribute
+	  for led sysfs class devices under /sys/class/leds.
+
+	  See Documentation/ABI/testing/sysfs-class-led for details.
+
 comment "LED drivers"
 
 config LEDS_88PM860X
@@ -114,6 +123,14 @@ config LEDS_MIKROTIK_RB532
 	help
 	  This option enables support for the so called "User LED" of
 	  Mikrotik's Routerboard 532.
+
+config LEDS_MT6323
+	tristate "LED Support for Mediatek MT6323 PMIC"
+	depends on LEDS_CLASS
+	depends on MFD_MT6397
+	help
+	  This option enables support for on-chip LED drivers found on
+	  Mediatek MT6323 PMIC.
 
 config LEDS_S3C24XX
 	tristate "LED Support for Samsung S3C24XX GPIO LEDs"
@@ -604,6 +621,14 @@ config LEDS_VERSATILE
 	help
 	  This option enabled support for the LEDs on the ARM Versatile
 	  and RealView boards. Say Y to enabled these.
+
+config LEDS_USER
+	tristate "Userspace LED support"
+	depends on LEDS_CLASS
+	help
+	  This option enables support for userspace LEDs. Say 'y' to enable this
+	  support in kernel. To compile this driver as a module, choose 'm' here:
+	  the module will be called uleds.
 
 comment "LED Triggers"
 source "drivers/leds/trigger/Kconfig"

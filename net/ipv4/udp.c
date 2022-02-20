@@ -114,6 +114,8 @@
 #include <net/busy_poll.h>
 #include "udp_impl.h"
 
+#include <net/ra_nat.h>
+
 struct udp_table udp_table __read_mostly;
 EXPORT_SYMBOL(udp_table);
 
@@ -2040,6 +2042,8 @@ void udp_v4_early_demux(struct sk_buff *skb)
 
 int udp_rcv(struct sk_buff *skb)
 {
+	hwnat_magic_tag_set_zero(skb);
+
 	return __udp4_lib_rcv(skb, &udp_table, IPPROTO_UDP);
 }
 

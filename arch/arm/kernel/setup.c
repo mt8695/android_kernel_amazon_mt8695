@@ -18,7 +18,6 @@
 #include <linux/bootmem.h>
 #include <linux/seq_file.h>
 #include <linux/screen_info.h>
-#include <linux/of_iommu.h>
 #include <linux/of_platform.h>
 #include <linux/init.h>
 #include <linux/kexec.h>
@@ -830,7 +829,6 @@ static int __init customize_machine(void)
 	 * machine from the device tree, if no callback is provided,
 	 * otherwise we would always need an init_machine callback.
 	 */
-	of_iommu_init();
 	if (machine_desc->init_machine)
 		machine_desc->init_machine();
 #ifdef CONFIG_OF
@@ -1076,6 +1074,8 @@ static const char *hwcap2_str[] = {
 	NULL
 };
 
+extern u32 get_devinfo_with_index(u32 index);
+
 static int c_show(struct seq_file *m, void *v)
 {
 	int i, j;
@@ -1137,7 +1137,9 @@ static int c_show(struct seq_file *m, void *v)
 
 	seq_printf(m, "Hardware\t: %s\n", machine_name);
 	seq_printf(m, "Revision\t: %04x\n", system_rev);
-	seq_printf(m, "Serial\t\t: %s\n", system_serial);
+	seq_printf(m, "Serial\t\t: %08x%08x\n",
+		get_devinfo_with_index(13),
+		get_devinfo_with_index(12));
 
 	return 0;
 }

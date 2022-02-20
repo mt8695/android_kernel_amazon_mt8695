@@ -61,6 +61,21 @@ unsigned long total_swapcache_pages(void)
 
 static atomic_t swapin_readahead_hits = ATOMIC_INIT(4);
 
+/* fosmod_fireos_crash_reporting begin */
+void lmk_add_to_buffer(const char *fmt, ...);
+
+void show_swap_cache_info_lmk(void)
+{
+	lmk_add_to_buffer("%lu pages in swap cache\n", total_swapcache_pages());
+	lmk_add_to_buffer("Swap cache stats: add %lu, delete %lu, find %lu/%lu\n",
+		swap_cache_info.add_total, swap_cache_info.del_total,
+		swap_cache_info.find_success, swap_cache_info.find_total);
+	lmk_add_to_buffer("Free swap  = %ldkB\n",
+		get_nr_swap_pages() << (PAGE_SHIFT - 10));
+	lmk_add_to_buffer("Total swap = %lukB\n", total_swap_pages << (PAGE_SHIFT - 10));
+}
+/* fosmod_fireos_crash_reporting end */
+
 void show_swap_cache_info(void)
 {
 	printk("%lu pages in swap cache\n", total_swapcache_pages());

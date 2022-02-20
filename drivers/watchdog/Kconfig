@@ -551,6 +551,7 @@ config MEDIATEK_WATCHDOG
 	tristate "Mediatek SoCs watchdog support"
 	depends on ARCH_MEDIATEK
 	select WATCHDOG_CORE
+	select RESET_CONTROLLER
 	help
 	  Say Y here to include support for the watchdog timer
 	  in Mediatek SoCs.
@@ -1344,6 +1345,13 @@ config RALINK_WDT
 	depends on RALINK
 	help
 	  Hardware driver for the Ralink SoC Watchdog Timer.
+
+config MT7621_WDT
+	tristate "Mediatek SoC watchdog"
+	select WATCHDOG_CORE
+	depends on SOC_MT7620 || SOC_MT7621
+	help
+	  Hardware driver for the MediaTek SoC Watchdog Timer.
 
 # PARISC Architecture
 

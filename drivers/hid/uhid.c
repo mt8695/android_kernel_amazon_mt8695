@@ -69,8 +69,9 @@ static void uhid_device_add_worker(struct work_struct *work)
 
 		hid_destroy_device(uhid->hid);
 		uhid->hid = NULL;
-		uhid->running = false;
+		return;
 	}
+	uhid->running = true;
 }
 
 static void uhid_queue(struct uhid_device *uhid, struct uhid_event *ev)
@@ -382,6 +383,27 @@ static int uhid_hid_output_report(struct hid_device *hid, __u8 *buf,
 	return uhid_hid_output_raw(hid, buf, count, HID_OUTPUT_REPORT);
 }
 
+static void hid_battery_level_ind(struct hid_device *hid,
+				unsigned int battery_level)
+{
+	struct uhid_device *uhid = hid->driver_data;
+	unsigned long flags;
+	struct uhid_event *ev;
+
+	ev = kzalloc(sizeof(*ev), GFP_ATOMIC);
+	if (!ev)
+		return;
+
+	ev->type = UHID_OUTPUT;
+	ev->u.output.size = sizeof(battery_level);
+	ev->u.output.rtype = UHID_OUTPUT_BATTERY_REPORT;
+	memcpy(ev->u.output.data, &battery_level, sizeof(battery_level));
+
+	spin_lock_irqsave(&uhid->qlock, flags);
+	uhid_queue(uhid, ev);
+	spin_unlock_irqrestore(&uhid->qlock, flags);
+}
+
 static struct hid_ll_driver uhid_hid_driver = {
 	.start = uhid_hid_start,
 	.stop = uhid_hid_stop,
@@ -390,6 +412,7 @@ static struct hid_ll_driver uhid_hid_driver = {
 	.parse = uhid_hid_parse,
 	.raw_request = uhid_hid_raw_request,
 	.output_report = uhid_hid_output_report,
+	.battery_level_ind = hid_battery_level_ind,
 };
 
 #ifdef CONFIG_COMPAT
@@ -525,7 +548,6 @@ static int uhid_dev_create2(struct uhid_device *uhid,
 	hid->dev.parent = uhid_misc.this_device;
 
 	uhid->hid = hid;
-	uhid->running = true;
 
 	/* Adding of a HID device is done through a worker, to allow HID drivers
 	 * which use feature requests during .probe to work, without they would
@@ -585,24 +607,26 @@ static int uhid_dev_destroy(struct uhid_device *uhid)
 
 static int uhid_dev_input(struct uhid_device *uhid, struct uhid_event *ev)
 {
+	int ret;
 	if (!uhid->running)
 		return -EINVAL;
 
-	hid_input_report(uhid->hid, HID_INPUT_REPORT, ev->u.input.data,
+	ret = hid_input_report(uhid->hid, HID_INPUT_REPORT, ev->u.input.data,
 			 min_t(size_t, ev->u.input.size, UHID_DATA_MAX), 0);
 
-	return 0;
+	return ret;
 }
 
 static int uhid_dev_input2(struct uhid_device *uhid, struct uhid_event *ev)
 {
+	int ret;
 	if (!uhid->running)
 		return -EINVAL;
 
-	hid_input_report(uhid->hid, HID_INPUT_REPORT, ev->u.input2.data,
+	ret = hid_input_report(uhid->hid, HID_INPUT_REPORT, ev->u.input2.data,
 			 min_t(size_t, ev->u.input2.size, UHID_DATA_MAX), 0);
 
-	return 0;
+	return ret;
 }
 
 static int uhid_dev_get_report_reply(struct uhid_device *uhid,

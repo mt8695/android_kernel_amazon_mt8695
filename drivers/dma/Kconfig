@@ -128,12 +128,34 @@ config DMA_JZ4780
 	  If you have a board based on such a SoC and wish to use DMA for
 	  devices which can use the DMA controller, say Y or M here.
 
+config DMA_MTK_UART
+	tristate "MediaTek SoCs APDMA support for UART"
+	depends on OF
+	select DMA_ENGINE
+	select DMA_VIRTUAL_CHANNELS
+	help
+	  Enable support for MediaTek SoC uart DMA engine.
+	  This DMA engine just only used when 8250 mtk uart is enabled.
+	  This DMA controller transfers data from memory to peripheral.
+	  It does not support memory to memory data transfer.
+
 config DMA_OMAP
 	tristate "OMAP DMA support"
 	depends on ARCH_OMAP
 	select DMA_ENGINE
 	select DMA_VIRTUAL_CHANNELS
 	select TI_DMA_CROSSBAR if SOC_DRA7XX
+
+config DMA_MT7620
+	tristate "MT7620 DMA support"
+	depends on RALINK && !SOC_RT288X
+	select DMA_ENGINE
+	select DMA_VIRTUAL_CHANNELS
+	help
+	  This selects support for the DMA controller in MediaTek MIPS SoCs.
+	  Currently supports MT7620 and older chips.
+	  If you have a board based on such a SoC and wish to use DMA for
+	  devices which can use the DMA controller, say Y or M here.
 
 config DMA_SA11X0
 	tristate "SA-11x0 DMA support"
@@ -329,6 +351,17 @@ config MPC512X_DMA
 	select DMA_ENGINE
 	---help---
 	  Enable support for the Freescale MPC512x built-in DMA engine.
+
+config MTK_HSDMA
+	tristate "MT7621 HSDMA support"
+	depends on RALINK && SOC_MT7621
+	select DMA_ENGINE
+	select DMA_VIRTUAL_CHANNELS
+	help
+	  This selects support for the DMA controller in Ingenic JZ4780 SoCs.
+	  Currently supports MT7621.
+	  If you have a board based on such a SoC and wish to use DMA for
+	  devices which can use the DMA controller, say Y or M here.
 
 config MV_XOR
 	bool "Marvell XOR engine support"

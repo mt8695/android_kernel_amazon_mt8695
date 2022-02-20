@@ -91,6 +91,33 @@ config HID_GENERIC
 menu "Special HID drivers"
 	depends on HID
 
+config HID_FTV_BLEREMOTE
+	tristate "Amazon FTV BLE Remote"
+	depends on HID
+	default n
+	---help---
+	This custom driver handle vendor specific commands
+
+config HID_AMAZON_ASPEN
+	tristate "Amazon Aspen BT Keyboard / Trackpad"
+	depends on HID
+	default HID
+	---help---
+	Support for Amazon Aspen KB/TrackPad
+	This custom driver handle Vendor specific events.
+
+	Say Y here if you want to enable support for Amazon Aspen KB/TrackPad
+
+config HID_LAB126
+	tristate "Lab126 keyboard"
+	depends on HID
+	default HID
+	---help---
+	Support for Lab126 keyboard.
+	this will add magneto object to the build.
+	Can be configured as module.
+	Safe to say no
+
 config HID_A4TECH
 	tristate "A4 tech mice"
 	depends on HID

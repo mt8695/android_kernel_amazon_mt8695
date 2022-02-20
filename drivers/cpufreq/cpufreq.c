@@ -2611,6 +2611,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
+EXPORT_TRACEPOINT_SYMBOL_GPL(cpu_frequency);
 
 /*
  * Stop cpufreq at shutdown to make sure it isn't holding any locks

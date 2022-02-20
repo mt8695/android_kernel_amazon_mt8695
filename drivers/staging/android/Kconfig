@@ -86,7 +86,7 @@ config ANDROID_VSOC
 
 source "drivers/staging/android/ion/Kconfig"
 
-source "drivers/staging/android/fiq_debugger/Kconfig"
+source "drivers/staging/android/mtk_ion/Kconfig"
 
 endif # if ANDROID
 

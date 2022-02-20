@@ -3223,7 +3223,7 @@ static void r8152_eee_en(struct r8152 *tp, bool enable)
 
 static void r8152b_enable_eee(struct r8152 *tp)
 {
-	r8152_eee_en(tp, true);
+	r8152_eee_en(tp, false);
 	r8152_mmd_write(tp, MDIO_MMD_AN, MDIO_AN_EEE_ADV, MDIO_EEE_100TX);
 }
 

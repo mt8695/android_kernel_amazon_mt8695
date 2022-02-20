@@ -174,7 +174,11 @@ static void mmc_queue_setup_discard(struct request_queue *q,
 	blk_queue_max_discard_sectors(q, max_discard);
 	if (card->erased_byte == 0 && !mmc_can_discard(card))
 		q->limits.discard_zeroes_data = 1;
-	q->limits.discard_granularity = card->pref_erase << 9;
+	if (card->pref_erase > 1024)
+		q->limits.discard_granularity = 1024 << 9;	/* Limit it to 512KB */
+	else
+		q->limits.discard_granularity = card->pref_erase << 9;
+
 	/* granularity must not be greater than max. discard */
 	if (card->pref_erase > max_discard)
 		q->limits.discard_granularity = 0;

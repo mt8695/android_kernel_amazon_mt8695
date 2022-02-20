@@ -54,6 +54,7 @@
 /* Whether we react on sysrq keys or just ignore them */
 static int __read_mostly sysrq_enabled = CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE;
 static bool __read_mostly sysrq_always_enabled;
+void kree_disable_fiq(int irq);
 
 static bool sysrq_on(void)
 {
@@ -149,6 +150,46 @@ static struct sysrq_key_op sysrq_crash_op = {
 	.action_msg	= "Trigger a crash",
 	.enable_mask	= SYSRQ_ENABLE_DUMP,
 };
+
+#if defined(CONFIG_MAGIC_SYSRQ_WD_TEST)
+static DEFINE_SPINLOCK(wdt_lock);
+
+static void sysrq_handle_wdt_sw_rst(int key)
+{
+	unsigned long flags;
+	spin_lock_irqsave(&wdt_lock, flags);
+	while (1)
+		;
+	/* wait for softlockup and wdt IRQ/FIQ to kick in. */
+}
+
+static struct sysrq_key_op sysrq_wdt_sw_op = {
+	.handler	= sysrq_handle_wdt_sw_rst,
+	.help_msg	= "wdt sw rst(x)",
+	.action_msg	= "Trigger a sw wdt reset",
+	.enable_mask	= SYSRQ_ENABLE_DUMP,
+};
+
+static void sysrq_handle_wdt_hw_rst(int key)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&wdt_lock, flags);
+
+	kree_disable_fiq(160); /* Disable watchdog FIQ. */
+	while (1) {
+		pr_err("WD+printk flooding test!!!");
+	};
+	/* wait for wdt hw to reboot DUT. */
+}
+
+static struct sysrq_key_op sysrq_wdt_hw_op = {
+	.handler	= sysrq_handle_wdt_hw_rst,
+	.help_msg	= "wdt hw rst(y)",
+	.action_msg	= "Trigger a hw wdt reset",
+	.enable_mask	= SYSRQ_ENABLE_DUMP,
+};
+#endif /* CONFIG_MAGIC_SYSRQ_WD_TEST */
 
 static void sysrq_handle_reboot(int key)
 {
@@ -480,12 +521,16 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
 	/* v: May be registered for frame buffer console restore */
 	NULL,				/* v */
 	&sysrq_showstate_blocked_op,	/* w */
-	/* x: May be registered on mips for TLB dump */
+#if defined(CONFIG_MAGIC_SYSRQ_WD_TEST)
+	&sysrq_wdt_sw_op,			/* x */
+	&sysrq_wdt_hw_op,			/* y */
+#else /* x: May be registered on mips for TLB dump */
 	/* x: May be registered on ppc/powerpc for xmon */
 	/* x: May be registered on sparc64 for global PMU dump */
-	NULL,				/* x */
+	NULL,					/* x */
 	/* y: May be registered on sparc64 for global register dump */
-	NULL,				/* y */
+	NULL,					/* y */
+#endif
 	&sysrq_ftrace_dump_op,		/* z */
 };
 

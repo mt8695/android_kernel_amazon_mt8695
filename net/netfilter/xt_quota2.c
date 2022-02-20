@@ -319,7 +319,10 @@ quota_mt2(const struct sk_buff *skb, struct xt_action_param *par)
 		}
 		ret = true;
 	} else {
-		if (e->quota >= skb->len) {
+		/*FIX: In the case quota is 0 already, no further quota2_log()
+		  will be triggered, we need to send the log here as well
+		*/
+		if (e->quota > skb->len) {
 			if (!(q->flags & XT_QUOTA_NO_CHANGE))
 				e->quota -= (q->flags & XT_QUOTA_PACKET) ? 1 : skb->len;
 			ret = !ret;

@@ -48,6 +48,7 @@
 #include <linux/uio.h>
 
 #include <asm/uaccess.h>
+#include <mt-plat/aee.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/printk.h>
@@ -254,12 +255,12 @@ static enum log_flags syslog_prev;
 static size_t syslog_partial;
 
 /* index and sequence number of the first record stored in the buffer */
-static u64 log_first_seq;
-static u32 log_first_idx;
+u64 log_first_seq;
+u32 log_first_idx;
 
 /* index and sequence number of the next record to store in the buffer */
-static u64 log_next_seq;
-static u32 log_next_idx;
+u64 log_next_seq;
+u32 log_next_idx;
 
 /* the next printk record to write to the console */
 static u64 console_seq;
@@ -1044,17 +1045,19 @@ module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
 static size_t print_time(u64 ts, char *buf)
 {
 	unsigned long rem_nsec;
+	int cpuid;
 
 	if (!printk_time)
 		return 0;
 
 	rem_nsec = do_div(ts, 1000000000);
+	cpuid = raw_smp_processor_id();
 
 	if (!buf)
-		return snprintf(NULL, 0, "[%5lu.000000] ", (unsigned long)ts);
+		return snprintf(NULL, 0, "[%5lu.000000@%d] ", (unsigned long)ts, cpuid);
 
-	return sprintf(buf, "[%5lu.%06lu] ",
-		       (unsigned long)ts, rem_nsec / 1000);
+	return sprintf(buf, "[%5lu.%06lu@%d] ",
+		       (unsigned long)ts, rem_nsec / 1000, cpuid);
 }
 
 static size_t print_prefix(const struct printk_log *msg, bool syslog, char *buf)
@@ -1485,6 +1488,18 @@ static void zap_locks(void)
 	/* And make sure that we print immediately */
 	sema_init(&console_sem, 1);
 }
+
+#ifdef CONFIG_MTK_AEE_FEATURE
+/* if logbuf lock in aee_wdt flow, zap locks uncondationally  */
+void aee_wdt_zap_locks(void)
+{
+	debug_locks_off();
+	/* If a crash is occurring, make sure we can't deadlock */
+	raw_spin_lock_init(&logbuf_lock);
+	/* And make sure that we print immediately */
+	sema_init(&console_sem, 1);
+}
+#endif
 
 /*
  * Check if we have any console that is capable of printing while cpu is
@@ -3178,6 +3193,13 @@ void show_regs_print_info(const char *log_lvl)
 
 	printk("%stask: %p task.stack: %p\n",
 	       log_lvl, current, task_stack_page(current));
+}
+
+void get_kernel_log_buffer(unsigned long *addr, unsigned long *size, unsigned long *start)
+{
+	*addr = (unsigned long)log_buf;
+	*size = log_buf_len;
+	*start = (unsigned long)&log_first_idx;
 }
 
 #endif

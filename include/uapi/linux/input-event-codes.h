@@ -336,6 +336,9 @@
 
 #define KEY_MICMUTE		248	/* Mute / unmute the microphone */
 
+#define KEY_LAB126_TP_LOCK	249	/* Amazon Keyboard Lock screen */
+#define KEY_LAB126_TP_UNLOCK	250	/* Amazon Keyboard Unlock screen */
+
 /* Code 255 is reserved for special needs of AT keyboard driver */
 
 #define BTN_MISC		0x100

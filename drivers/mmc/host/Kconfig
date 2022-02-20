@@ -786,3 +786,12 @@ config MMC_MTK
 	  If you have a machine with a integrated SD/MMC card reader, say Y or M here.
 	  This is needed if support for any SD/SDIO/MMC devices is required.
 	  If unsure, say N.
+
+config MMC_MTK_COMM_SDIO
+	tristate "MediaTek SDIO driver support"
+	help
+	  This selects the MediaTek(R) SDIO serial driver, if enable,
+	  will use the driver at mmc/host/, but not use meidatek/${platform}.
+	  Note that this driver only support SDIO.
+
+	  If unsure, say N.

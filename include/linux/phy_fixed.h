@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2004 Freescale Semiconductor, Inc.
+ *
+ * This program is free software; you can redistribute  it and/or modify it
+ * under  the terms of  the GNU General  Public License as published by the
+ * Free Software Foundation;  either version 2 of the  License, or (at your
+ * option) any later version.
+ *
+ */
+
 #ifndef __PHY_FIXED_H
 #define __PHY_FIXED_H
 
@@ -19,7 +29,7 @@ extern struct phy_device *fixed_phy_register(unsigned int irq,
 					     struct fixed_phy_status *status,
 					     int link_gpio,
 					     struct device_node *np);
-extern void fixed_phy_del(int phy_addr);
+extern void fixed_phy_unregister(struct phy_device *phydev);
 extern int fixed_phy_set_link_update(struct phy_device *phydev,
 			int (*link_update)(struct net_device *,
 					   struct fixed_phy_status *));
@@ -40,9 +50,8 @@ static inline struct phy_device *fixed_phy_register(unsigned int irq,
 {
 	return ERR_PTR(-ENODEV);
 }
-static inline int fixed_phy_del(int phy_addr)
+static inline void fixed_phy_unregister(struct phy_device *phydev)
 {
-	return -ENODEV;
 }
 static inline int fixed_phy_set_link_update(struct phy_device *phydev,
 			int (*link_update)(struct net_device *,
