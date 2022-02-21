@@ -25,9 +25,6 @@
 /* / KREE session handle type. */
 typedef uint32_t KREE_SESSION_HANDLE;
 
-typedef uint32_t KREE_SHAREDMEM_HANDLE;
-
-
 /* Session Management */
 /**
  *  Create a new TEE sesssion
