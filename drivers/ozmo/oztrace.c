@@ -247,7 +247,7 @@ void trace_dbg_msg(int c, char *fmt, ...)
 	va_end(arg);
 }
 
-void trace_debug_log(char log_type, ...)
+void trace_debug_log(uint32_t log_type, ...)
 {
 	va_list arg;
 	char *fmt;

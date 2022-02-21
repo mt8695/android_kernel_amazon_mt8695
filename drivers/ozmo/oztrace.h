@@ -26,7 +26,7 @@ void oz_trace_f_urb_in(struct urb *urb);
 void oz_trace_f_skb(struct sk_buff *skb, char dir);
 void oz_trace_f_dbg(void);
 void trace_dbg_msg(int c, char *fmt, ...);
-void trace_debug_log(char log_type, ...);
+void trace_debug_log(uint32_t log_type, ...);
 
 
 
