@@ -37,7 +37,6 @@
 #define M4U_PAGE_MASK	0xfff
 
 typedef int M4U_MODULE_ID_ENUM;
-typedef int M4U_MODULE_ID_ENUM;
 typedef int M4U_PORT_ID_ENUM;
 typedef int M4U_RANGE_PRIORITY_ENUM;
 typedef int M4U_PORT_ID;
