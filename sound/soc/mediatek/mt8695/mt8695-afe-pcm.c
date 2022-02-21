@@ -2029,12 +2029,13 @@ static int mt8695_afe_dmic_prepare(struct snd_pcm_substream *substream,
 		reg_t = AFE_DMIC2_TOP_CON;
 	}
 
-	if (afe->dmic_wire_mode == DMIC_TWO_WIRE)
-		val |= DMIC_TWO_WIRE_MODE;
+	if (afe->dmic_wire_mode == DMIC_TWO_WIRE) {
+	    val |= DMIC_TWO_WIRE_MODE;
 
-		/* digital mic ch1/2 phase selection*/
-		val |= (0 << DMIC_CH1_CK_PHASE_POS);
-		val |= (4 << DMIC_CH2_CK_PHASE_POS);
+	    /* digital mic ch1/2 phase selection*/
+	    val |= (0 << DMIC_CH1_CK_PHASE_POS);
+	    val |= (4 << DMIC_CH2_CK_PHASE_POS);
+	}
 
 	switch (rate) {
 	case 8000:
