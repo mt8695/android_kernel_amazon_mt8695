@@ -242,13 +242,13 @@ static int __init mdp_init(void)
 		atomic_set(&is_suspend, false);
 
 		if (platform_device_register(&mtk_mdp_device)) {
-			status = MDP_TASK_STATE_ERROR;
+			status = MDP_TASK_STATUS_GENERAL_ERROR;
 			break;
 		}
 
 		if (platform_driver_register(&mtk_mdp_driver)) {
 			platform_device_unregister(&mtk_mdp_device);
-			status = MDP_TASK_STATE_ERROR;
+			status = MDP_TASK_STATUS_GENERAL_ERROR;
 			break;
 		}
 
