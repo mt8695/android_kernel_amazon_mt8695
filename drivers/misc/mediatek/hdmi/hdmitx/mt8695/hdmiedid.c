@@ -1684,7 +1684,7 @@ static void vParser_User_Extension_Tag(unsigned char *prData, unsigned char Len)
 				case 0x0004:
 					_HdmiSinkAvCap.ui1_sink_support_dynamic_hdr |= EDID_SUPPORT_HDR10_PLUS;
 					if (type_len >= 3)
-						version = (*(prData + 2 + bIdx + 3)) && 0x0f;
+						version = (*(prData + 2 + bIdx + 3)) & 0x0f;
 					break;
 				default:
 					break;
