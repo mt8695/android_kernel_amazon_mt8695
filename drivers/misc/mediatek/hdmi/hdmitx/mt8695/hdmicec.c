@@ -1647,7 +1647,7 @@ static void _CEC_TX_check_result(struct mtk_cec *cec)
 	frame = _CEC_Get_Cur_TX_Q_Msg();
 
 	if (IsCECStatus(STATE_TXFAIL_RETR)) {
-		if ((frame->blocks.header.destination == CEC_LOG_ADDR_UNREGED_BRDCST)) {
+		if (frame->blocks.header.destination == CEC_LOG_ADDR_UNREGED_BRDCST) {
 			if (IsCECStatus(STATE_TX_NOACK)) {
 				result = 1;
 				ClrCECStatus(STATE_TX_NOACK);
@@ -1694,7 +1694,7 @@ static void _CEC_TX_check_result(struct mtk_cec *cec)
 	if (IsCECStatus(STATE_TX_FRAME_SUCCESS)) {
 		result = 1;
 		ClrCECStatus(STATE_TX_FRAME_SUCCESS);
-		if ((frame->blocks.header.destination == CEC_LOG_ADDR_UNREGED_BRDCST))
+		if (frame->blocks.header.destination == CEC_LOG_ADDR_UNREGED_BRDCST)
 			HDMI_CEC_LOG("CEC Brdcst message success\n");
 		else
 			HDMI_CEC_LOG("CEC Direct message success\n");
