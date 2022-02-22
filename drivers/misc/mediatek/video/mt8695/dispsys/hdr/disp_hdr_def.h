@@ -4,9 +4,9 @@
 #include <linux/printk.h>
 #include <linux/workqueue.h>
 #include "disp_hw_mgr.h"
+#include "disp_type.h"
 
 #define MT8695
-typedef unsigned int UINT32;
 
 /*if lk using sdr2hdr path, kernel initiation which need to open sdr2hdr clock*/
 #define CONFIG_DRV_SDR2HDR_USED_FAST_LOGO 1
