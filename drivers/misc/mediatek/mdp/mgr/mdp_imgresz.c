@@ -298,7 +298,7 @@ enum MDP_TASK_STATUS mdp_imgresz_fill_task(struct mdp_task_struct *pTask)
 		if (p_command_buffer->color_format == DP_COLOR_NV21)
 			need_cbcr_swap = !need_cbcr_swap;
 
-		p_task_src_buffer->buf_info.mem_type = p_command_buffer->buffer_info.memory_type;
+		p_task_src_buffer->buf_info.mem_type = (enum IMGRZ_MEM_ENUM)p_command_buffer->buffer_info.memory_type;
 
 		p_task_src_buffer->buf_info.fd = p_command_buffer->buffer_info.memory_type == DP_MEMORY_SECURE ?
 			p_command_buffer->buffer_info.secureHandle :
@@ -344,7 +344,7 @@ enum MDP_TASK_STATUS mdp_imgresz_fill_task(struct mdp_task_struct *pTask)
 			break;
 		}
 
-		p_task_dst_buffer->buf_info.mem_type = p_command_buffer->buffer_info.memory_type;
+		p_task_dst_buffer->buf_info.mem_type = (enum IMGRZ_MEM_ENUM)p_command_buffer->buffer_info.memory_type;
 
 		p_task_dst_buffer->buf_info.fd = p_command_buffer->buffer_info.memory_type == DP_MEMORY_SECURE ?
 			p_command_buffer->buffer_info.secureHandle :
