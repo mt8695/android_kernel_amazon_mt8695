@@ -55,10 +55,6 @@
 #define ERROR_MTK_CRYPTO_KEY_IDX_NOT_SUPPORT        18
 #define ERROR_MTK_CRYPTO_CTX_BUSY                   19
 
-
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long u64;
 typedef unsigned char GCPU_INST_HANDLE_T;
 
 /* mtk crypto driver context */
