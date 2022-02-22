@@ -16,7 +16,6 @@
 #include "disp_osd_if.h"
 #include "osd_hw.h"
 #include "disp_reg.h"
-#pragma GCC optimize("O0")
 
 /*#include "ddp_reg.h"*/
 /*#include "ddp_debug.h"*/

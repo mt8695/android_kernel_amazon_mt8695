@@ -34,8 +34,6 @@
 #include "fmt_hal.h"
 #include "vdout_sys_hal.h"
 
-#pragma GCC optimize("O0")
-
 
 
 /* --------------------------------------------------------------------------- */
