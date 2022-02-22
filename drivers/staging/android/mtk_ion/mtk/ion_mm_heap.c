@@ -799,7 +799,7 @@ struct ion_heap *ion_mm_heap_create(struct ion_platform_heap *unused)
 		return ERR_PTR(-ENOMEM);
 	}
 	heap->heap.ops = &system_heap_ops;
-	heap->heap.type = ION_HEAP_TYPE_MULTIMEDIA;
+	heap->heap.type = (enum ion_heap_type)ION_HEAP_TYPE_MULTIMEDIA;
 	/*heap->heap.flags = ION_HEAP_FLAG_DEFER_FREE;*/
 	heap->heap.flags = 0;
 	heap->pools = kcalloc(num_orders, sizeof(struct ion_page_pool *), GFP_KERNEL);

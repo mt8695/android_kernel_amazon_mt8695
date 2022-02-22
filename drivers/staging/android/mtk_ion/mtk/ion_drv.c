@@ -719,7 +719,7 @@ int ion_drv_remove(struct platform_device *pdev)
 
 static struct ion_platform_heap ion_drv_platform_heaps[] = {
 		{
-				.type = ION_HEAP_TYPE_MULTIMEDIA,
+				.type = (enum ion_heap_type)ION_HEAP_TYPE_MULTIMEDIA,
 				.id = ION_HEAP_TYPE_MULTIMEDIA,
 				.name = "ion_mm_heap",
 				.base = 0,
@@ -728,7 +728,7 @@ static struct ion_platform_heap ion_drv_platform_heaps[] = {
 				.priv = NULL,
 		},
 		{
-				.type = ION_HEAP_TYPE_MULTIMEDIA,
+				.type = (enum ion_heap_type)ION_HEAP_TYPE_MULTIMEDIA,
 				.id = ION_HEAP_TYPE_MULTIMEDIA_FOR_CAMERA,
 				.name = "ion_mm_heap_for_camera",
 				.base = 0,
@@ -737,7 +737,7 @@ static struct ion_platform_heap ion_drv_platform_heaps[] = {
 				.priv = NULL,
 		},
 		{
-				.type = ION_HEAP_TYPE_MULTIMEDIA_SEC,
+				.type = (enum ion_heap_type)ION_HEAP_TYPE_MULTIMEDIA_SEC,
 				.id = ION_HEAP_TYPE_MULTIMEDIA_SEC,
 				.name = "ion_sec_heap",
 				.base = 0,
@@ -746,7 +746,7 @@ static struct ion_platform_heap ion_drv_platform_heaps[] = {
 				.priv = NULL,
 		},
 		{
-				.type = ION_HEAP_TYPE_MULTIMEDIA,
+				.type = (enum ion_heap_type)ION_HEAP_TYPE_MULTIMEDIA,
 				.id = ION_HEAP_TYPE_MULTIMEDIA_MAP_MVA,
 				.name = "ion_mm_heap_for_va2mva",
 				.base = 0,
