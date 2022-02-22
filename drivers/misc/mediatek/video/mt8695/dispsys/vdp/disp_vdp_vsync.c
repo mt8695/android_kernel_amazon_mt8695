@@ -3163,7 +3163,7 @@ static int vdp_routine(void *data)
 			#endif
 				vdp_hal_config(i, &config_info);
 
-			if ((dsd_en == 1)) {
+			if (dsd_en == 1) {
 				/*Update vdo setting && disp_fmt */
 				#if VIDEO_DISPLAY_SECURE_ENABLE
 				if (!layer_info->secure_en)
