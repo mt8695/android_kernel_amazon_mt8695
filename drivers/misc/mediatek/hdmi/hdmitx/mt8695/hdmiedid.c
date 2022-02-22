@@ -1374,14 +1374,13 @@ static void vParser_VendorSpecfic_Data_Block(unsigned char *prData, unsigned cha
 						u23D_MASK_ALL =
 						    (((unsigned short)(b3D_MASK_15_8)) << 8)
 						    | ((unsigned short)(b3D_MASK_7_0));
-					for (i = 0; i < 0x10; i++) {
-					if (u23D_MASK_ALL & 0x0001)
-						_u4i_3D_VIC |= _ui4First_16_VIC[i];
-
-						u23D_MASK_ALL = u23D_MASK_ALL >> 1;
-					}
-					}
-
+					    for (i = 0; i < 0x10; i++) {
+					        if (u23D_MASK_ALL & 0x0001) {
+						    _u4i_3D_VIC |= _ui4First_16_VIC[i];
+						    u23D_MASK_ALL = u23D_MASK_ALL >> 1;
+					        }
+					    }
+                                        }
 				}
 				while (((15 - bLatency_offset +
 					 ((bTemp14 & 0xE0) >> 5)) +
