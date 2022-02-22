@@ -1449,7 +1449,7 @@ int disp_vdp_dbg_level_enable(uint32_t level, uint32_t enable)
 	if (enable)
 		vdp_dbg_level |= (1 << level);
 	else
-		vdp_dbg_level &= !(1 << level);
+		vdp_dbg_level = ((1 << level) != 0);
 	DISP_LOG_I("set dbg level %d enable %d 0x%X\n", level, enable,
 	vdp_dbg_level);
 	return VDP_OK;
