@@ -161,7 +161,7 @@ UINT32 dovi_get_input_format(enum DISP_DR_TYPE_T *dovi_input_dr)
 			*dovi_input_dr = DISP_DR_TYPE_SDR;
 			break;
 		default:
-			*dovi_input_dr = SIGNAL_FORMAT_SDR;
+			*dovi_input_dr = (enum DISP_DR_TYPE_T)SIGNAL_FORMAT_SDR;
 			break;
 		}
 	}
