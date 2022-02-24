@@ -218,16 +218,6 @@ androidboot.hardware=mt8695 androidboot.serialno=0123456789ABCDEF";
 	proc-supply = <&mt6393_vproc_reg>;
 };
 
-&fstab {
-        vendor {
-                compatible = "android,vendor";
-                dev = "/dev/block/platform/soc/11230000.mmc/by-name/vendor";
-                type = "ext4";
-                mnt_flags = "ro";
-                fsmgr_flags = "wait,verify";
-        };
-};
-
 &wifi {
 	pinctrl-names = "default";
 	pinctrl-0 = <&wifi_default>;
