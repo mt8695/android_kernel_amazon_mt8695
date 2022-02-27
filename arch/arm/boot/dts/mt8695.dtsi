@@ -473,7 +473,7 @@
 			interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_LOW>;
 			clocks = <&pericfg CLK_PERI_UART1_SEL>, <&pericfg CLK_PERI_UART1>;
 			clock-names = "baud", "bus";
-			status = "disabled";
+			status = "okay";
 		};
 
 		uart2: serial@11004000 {
