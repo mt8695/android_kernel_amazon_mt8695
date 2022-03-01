@@ -928,7 +928,7 @@ int disp_hw_mgr_config(struct mtk_disp_config *config)
 	if (mgr->hdmi_plug_out) {
 		layer_enable[DISP_VDP_LAYER1] = mgr->hw_playing_status[DISP_VDP_LAYER1];
 		layer_enable[DISP_VDP_LAYER2] = mgr->hw_playing_status[DISP_VDP_LAYER2];
-		DISP_LOG_I("hdmi plug out, drop video layer\n");
+ 		DISP_LOG_D("hdmi plug out, drop video layer\n");
 	}
 	j = k = 0;
 
