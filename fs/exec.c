@@ -38,6 +38,7 @@
 #include <linux/spinlock.h>
 #include <linux/key.h>
 #include <linux/personality.h>
+#include <linux/ksm.h>
 #include <linux/binfmts.h>
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
